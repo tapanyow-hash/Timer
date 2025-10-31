@@ -1,5 +1,5 @@
 // กำหนดชื่อแคชเพื่อให้สามารถอัปเดตเวอร์ชันได้ง่าย
-const CACHE_NAME = 'rate-timer-app-v1';
+const CACHE_NAME = 'rate-timer-app-v2';
 
 // กำหนดรายการไฟล์ที่จำเป็นในการทำงานแบบออฟไลน์
 const urlsToCache = [
