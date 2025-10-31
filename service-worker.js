@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rate-timer-v2'; // ชื่อแคชเดิม
+const CACHE_NAME = 'rate-timer-v1'; // ชื่อแคชเดิม
 const urlsToCache = [
   './',
   './index.html?app=rate-timer',
