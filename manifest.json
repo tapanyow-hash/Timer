@@ -1,5 +1,5 @@
 {
-  "name": "Rate Timer V2",
+  "name": "Rate Timer",
   "short_name": "Rate Timer",
   "start_url": "./index.html?app=rate-timer",
   "display": "standalone",
