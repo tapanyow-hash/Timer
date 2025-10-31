@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตัวจับเวลาพร้อมคำนวณอัตราส่วน PWA</title>
-    <!-- 1. ลิงก์ PWA Manifest -->
+    <title>ตัวจับเวลาพร้อมคำนวณอัตราส่วน V2</title>
+    <!-- 1. ลิงก์ PWA Manifest - สำคัญสำหรับ PWA ID ใหม่ -->
     <link rel="manifest" href="manifest.json">
     
     <!-- โหลด Tailwind CSS -->
@@ -18,14 +18,14 @@
         }
         /* Custom styles for button size and shape */
         .btn {
-            /* กำหนดความสูงและความกว้างตามที่ผู้ใช้ต้องการ: 50px สูง, 100px กว้าง */
+            /* กำหนดความสูงและความกว้าง: 50px สูง, 100px กว้าง */
             height: 50px; 
             width: 100px; 
             /* กำหนด border-radius: 25vh เพื่อให้เกิดความมนโค้ง */
             border-radius: 25vh; 
             
             /* ใช้ Flex เพื่อจัดข้อความกลางปุ่ม */
-            @apply text-base shadow-lg transition duration-200 ease-in-out uppercase flex items-center justify-center;
+            @apply text-base shadow-lg transition duration-200 ease-in-out uppercase flex items-center justify-center font-bold;
         }
         .btn:active {
             transform: scale(0.95);
@@ -103,11 +103,9 @@
         <!-- 3. ผลลัพธ์จากการคำนวณ (อัตราส่วน) -->
         <div id="resultDisplay" class="flex flex-col items-center justify-center text-center mb-8">
             <p class="text-base text-gray-600 font-medium mb-2">จำนวนคน/นาที</p> 
-            <p id="calculationResult" class="font-black text-gray-900 leading-none">
-                <!-- ผลลัพธ์หลัก (ปัดเศษปกติ) -->
-                <!-- สัญลักษณ์ Infinity (SVG) -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-red-500 mx-auto" viewBox="0 0 200 100">
-                    <path fill="currentColor" d="M100 50c-13.8 0-25 11.2-25 25s11.2 25 25 25 25-11.2 25-25-11.2-25-25-25zm50 25c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25zm-100 0c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25z" transform="scale(0.8) translate(20, -5)" /></svg>
+            <p id="calculationResult" class="font-black text-gray-900 leading-none text-6xl">
+                <!-- สัญลักษณ์ Infinity (จะถูกแทนที่ด้วย JS) -->
+                ∞ 
             </p>
             <!-- ผลลัพธ์รอง (ทศนิยม 2 ตำแหน่ง) -->
             <p id="decimalResult" class="text-sm text-gray-500 font-light mt-1">0.00</p>
@@ -154,8 +152,8 @@
     const timeEl = document.getElementById('timeDisplay');
     const fullscreenBtn = document.getElementById('fullscreenButton'); 
 
-    // โค้ด SVG ของสัญลักษณ์ Infinity
-    const infinitySVG = `<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-red-500 mx-auto" viewBox="0 0 200 100"><path fill="currentColor" d="M100 50c-13.8 0-25 11.2-25 25s11.2 25 25 25 25-11.2 25-25-11.2-25-25-25zm50 25c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25zm-100 0c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25z" transform="scale(0.8) translate(20, -5)" /></svg>`;
+    // สัญลักษณ์ Infinity (ใช้ Unicode แทน SVG เพื่อความเสถียรสูงสุดในการแสดงผล)
+    const infinitySymbol = '∞';
 
     /**
      * อัปเดตการแสดงผล (เวลาและผลลัพธ์การคำนวณ)
@@ -175,7 +173,9 @@
         
         if (elapsedTime < 100) { 
             // กรณีที่เวลายังไม่เริ่ม (หรือเวลาเกือบเป็น 0)
-            resultEl.innerHTML = infinitySVG;
+            resultEl.textContent = infinitySymbol;
+            resultEl.classList.add('text-red-500');
+            resultEl.classList.remove('text-gray-900');
             decimalEl.textContent = "0.00"; 
         } else {
             // คำนวณอัตราส่วนจริง
@@ -245,14 +245,14 @@
      * สลับโหมดเต็มหน้าจอ (Fullscreen)
      */
     function toggleFullscreen() {
-        const mainApp = document.getElementById('app').querySelector('div'); // กรอบสีขาวหลัก
+        // พยายามขอ Fullscreen จากองค์ประกอบหลักของแอป
+        const mainApp = document.getElementById('app').querySelector('div'); 
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
-            // ขอ Fullscreen จากกรอบสีขาวหลัก
             mainApp.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-                // Fallback attempt on document body/documentElement
+                // หากล้มเหลว ลองใช้ document.documentElement แทน (ซึ่งมักถูกบล็อกใน iFrame)
                 document.documentElement.requestFullscreen().catch(err2 => {
                     console.error(`Error attempting to enable full-screen mode on document: ${err2.message}`);
                 });
@@ -271,11 +271,12 @@
     inputEl.addEventListener('input', updateDisplay);
 
     // ----------------------------------------------------------------
-    // PWA Service Worker Registration
+    // PWA Service Worker Registration (สำคัญสำหรับ PWA)
     // ----------------------------------------------------------------
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
+            // ลงทะเบียน Service Worker ใหม่ พร้อม ID ที่ไม่ซ้ำ (เพื่อติดตั้งคู่กับแอปเก่าได้)
+            navigator.serviceWorker.register('./service-worker.js', { scope: './' })
                 .then(registration => {
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
                 })
@@ -284,7 +285,6 @@
                 });
         });
     }
-
 
     // Initial setup
     window.onload = function() {
