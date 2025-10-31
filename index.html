@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ตัวจับเวลาพร้อมคำนวณอัตราส่วน V2</title>
-    <!-- 1. ลิงก์ PWA Manifest - สำคัญสำหรับ PWA ID ใหม่ -->
+    <!-- 1. ลิงก์ PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
     <!-- โหลด Tailwind CSS -->
@@ -29,6 +29,9 @@
         }
         .btn:active {
             transform: scale(0.95);
+        }
+        .btn:disabled {
+            @apply opacity-50 cursor-not-allowed shadow-none;
         }
         /* Styles for the main container to ensure responsiveness */
         .main-container {
@@ -75,7 +78,7 @@
 <body>
 
 <div id="app" class="main-container p-4 flex items-start justify-center pt-10 md:pt-16">
-    <!-- กรอบหลัก (Main Frame) - เพิ่มคลาส relative เพื่อให้ปุ่ม Fullscreen วางตำแหน่ง absolute ได้ -->
+    <!-- กรอบหลัก (Main Frame) -->
     <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col items-center relative">
 
         <!-- 1. ช่องใส่ตัวเลข (Input) -->
@@ -92,6 +95,7 @@
             <button id="stopButton" class="btn bg-custom-red text-white hover:bg-red-700" disabled>
                 STOP
             </button>
+            <!-- RESET BUTTON: เริ่มต้นสถานะเป็นเปิดใช้งาน -->
             <button id="resetButton" class="btn bg-custom-purple text-white hover:bg-purple-700">
                 RESET
             </button>
@@ -104,7 +108,6 @@
         <div id="resultDisplay" class="flex flex-col items-center justify-center text-center mb-8">
             <p class="text-base text-gray-600 font-medium mb-2">จำนวนคน/นาที</p> 
             <p id="calculationResult" class="font-black text-gray-900 leading-none text-6xl">
-                <!-- สัญลักษณ์ Infinity (จะถูกแทนที่ด้วย JS) -->
                 ∞ 
             </p>
             <!-- ผลลัพธ์รอง (ทศนิยม 2 ตำแหน่ง) -->
@@ -146,13 +149,13 @@
     const inputEl = document.getElementById('inputNumber');
     const startBtn = document.getElementById('startButton');
     const stopBtn = document.getElementById('stopButton');
-    const resetBtn = document.getElementById('resetButton');
+    const resetBtn = document.getElementById('resetButton'); // เข้าถึงปุ่ม RESET
     const resultEl = document.getElementById('calculationResult');
     const decimalEl = document.getElementById('decimalResult');
     const timeEl = document.getElementById('timeDisplay');
     const fullscreenBtn = document.getElementById('fullscreenButton'); 
 
-    // สัญลักษณ์ Infinity (ใช้ Unicode แทน SVG เพื่อความเสถียรสูงสุดในการแสดงผล)
+    // สัญลักษณ์ Infinity (ใช้ Unicode แทน SVG)
     const infinitySymbol = '∞';
 
     /**
@@ -211,6 +214,10 @@
         startBtn.disabled = true;
         stopBtn.disabled = false;
         inputEl.disabled = true;
+        
+        // ********** การแก้ไข: ปิดการใช้งานปุ่ม RESET เมื่อเริ่มจับเวลา **********
+        resetBtn.disabled = true; 
+        // *******************************************************************
     }
 
     /**
@@ -225,12 +232,17 @@
         startBtn.disabled = false;
         stopBtn.disabled = true;
         inputEl.disabled = false;
+        
+        // ********** การแก้ไข: เปิดใช้งานปุ่ม RESET เมื่อหยุดจับเวลา **********
+        resetBtn.disabled = false;
+        // *******************************************************************
     }
 
     /**
      * รีเซ็ตการจับเวลา
      */
     function resetTimer() {
+        // ไม่จำเป็นต้องเช็ค isRunning เพราะปุ่มจะถูกปิดใช้งาน
         stopTimer(); 
         
         elapsedTime = 0;
@@ -239,6 +251,10 @@
         startBtn.disabled = false;
         stopBtn.disabled = true;
         inputEl.disabled = false;
+        
+        // ********** การแก้ไข: เปิดใช้งานปุ่ม RESET เมื่อรีเซ็ตเสร็จสมบูรณ์ **********
+        resetBtn.disabled = false;
+        // *******************************************************************
     }
 
     /**
@@ -252,7 +268,6 @@
         } else {
             mainApp.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-                // หากล้มเหลว ลองใช้ document.documentElement แทน (ซึ่งมักถูกบล็อกใน iFrame)
                 document.documentElement.requestFullscreen().catch(err2 => {
                     console.error(`Error attempting to enable full-screen mode on document: ${err2.message}`);
                 });
@@ -271,11 +286,11 @@
     inputEl.addEventListener('input', updateDisplay);
 
     // ----------------------------------------------------------------
-    // PWA Service Worker Registration (สำคัญสำหรับ PWA)
+    // PWA Service Worker Registration (สำหรับ GitHub Pages)
     // ----------------------------------------------------------------
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // ลงทะเบียน Service Worker ใหม่ พร้อม ID ที่ไม่ซ้ำ (เพื่อติดตั้งคู่กับแอปเก่าได้)
+            // ลงทะเบียน Service Worker ใหม่ พร้อม ID ที่ไม่ซ้ำ
             navigator.serviceWorker.register('./service-worker.js', { scope: './' })
                 .then(registration => {
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
