@@ -39,25 +39,6 @@
         #calculationResult {
             font-size: 4rem; /* text-6xl equivalent */
         }
-        /* Fullscreen button styling */
-        #fullscreenButton {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            width: 44px;
-            height: 44px;
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            transition: background-color 0.2s;
-        }
-        #fullscreenButton:hover {
-            background-color: rgba(0, 0, 0, 0.2);
-        }
     </style>
     <!-- ตั้งค่า Tailwind Configuration เพื่อใช้สีที่กำหนดเอง -->
     <script>
@@ -77,7 +58,8 @@
 <body>
 
 <div id="app" class="main-container p-4 flex items-start justify-center pt-10 md:pt-16">
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col items-center">
+    <!-- กรอบหลัก (Main Frame) - เพิ่มคลาส relative เพื่อให้ปุ่ม Fullscreen วางตำแหน่ง absolute ได้ -->
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col items-center relative">
 
         <!-- 1. ช่องใส่ตัวเลข (Input) -->
         <label for="inputNumber" class="text-sm font-semibold text-gray-600 mb-2">จำนวนคนทั้งหมด</label>
@@ -121,17 +103,18 @@
                 0 นาที 0 วินาที
             </p>
         </div>
+        
+        <!-- ปุ่ม Fullscreen (มุมขวาล่างของ Frame) -->
+        <button id="fullscreenButton" class="absolute bottom-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-lg p-1.5 transition duration-150">
+            <!-- Icon SVG for Fullscreen (Expand) -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+        </button>
 
     </div>
 </div>
 
-<!-- ปุ่ม Fullscreen (มุมขวาล่าง) -->
-<button id="fullscreenButton">
-    <!-- Icon SVG for Fullscreen (Expand) -->
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600">
-        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-    </svg>
-</button>
 
 <script>
     // ----------------------------------------------------------------
@@ -152,7 +135,7 @@
     const resultEl = document.getElementById('calculationResult');
     const decimalEl = document.getElementById('decimalResult');
     const timeEl = document.getElementById('timeDisplay');
-    const fullscreenBtn = document.getElementById('fullscreenButton'); // ปุ่ม Fullscreen
+    const fullscreenBtn = document.getElementById('fullscreenButton'); 
 
     // โค้ด SVG ของสัญลักษณ์ Infinity
     const infinitySVG = `<svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-red-500 mx-auto" viewBox="0 0 200 100"><path fill="currentColor" d="M100 50c-13.8 0-25 11.2-25 25s11.2 25 25 25 25-11.2 25-25-11.2-25-25-25zm50 25c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25zm-100 0c0-13.8 11.2-25 25-25s25 11.2 25 25-11.2 25-25 25-25-11.2-25-25z" transform="scale(0.8) translate(20, -5)" /></svg>`;
@@ -245,12 +228,18 @@
      * สลับโหมดเต็มหน้าจอ (Fullscreen)
      */
     function toggleFullscreen() {
+        // Fullscreen the nearest ancestor that is the main app frame, documentElement, or body
+        const targetElement = document.getElementById('app'); 
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
-            document.documentElement.requestFullscreen().catch(err => {
-                // Console log, since alert() is forbidden
+            // Use the main app container for fullscreen request
+            targetElement.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                // Fallback attempt on document body/documentElement
+                document.documentElement.requestFullscreen().catch(err2 => {
+                    console.error(`Error attempting to enable full-screen mode on document: ${err2.message}`);
+                });
             });
         }
     }
