@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตัวจับเวลาพร้อมคำนวณอัตราส่วน</title>
+    <title>ตัวจับเวลาพร้อมคำนวณอัตราส่วน PWA</title>
+    <!-- 1. ลิงก์ PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- โหลด Font Inter -->
@@ -38,6 +41,20 @@
         /* Styles for the result display to ensure large text */
         #calculationResult {
             font-size: 4rem; /* text-6xl equivalent */
+        }
+        /* Fullscreen button styling */
+        #fullscreenButton {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background-color 0.2s;
+        }
+        #fullscreenButton:hover {
+            background-color: rgba(0, 0, 0, 0.2);
         }
     </style>
     <!-- ตั้งค่า Tailwind Configuration เพื่อใช้สีที่กำหนดเอง -->
@@ -157,7 +174,7 @@
         const totalMinutes = elapsedTime / 60000; // 60,000 มิลลิวินาที = 1 นาที
         
         if (elapsedTime < 100) { 
-            // กรณีที่เวลายังไม่เริ่ม
+            // กรณีที่เวลายังไม่เริ่ม (หรือเวลาเกือบเป็น 0)
             resultEl.innerHTML = infinitySVG;
             decimalEl.textContent = "0.00"; 
         } else {
@@ -228,13 +245,12 @@
      * สลับโหมดเต็มหน้าจอ (Fullscreen)
      */
     function toggleFullscreen() {
-        // Fullscreen the nearest ancestor that is the main app frame, documentElement, or body
-        const targetElement = document.getElementById('app'); 
+        const mainApp = document.getElementById('app').querySelector('div'); // กรอบสีขาวหลัก
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
-            // Use the main app container for fullscreen request
-            targetElement.requestFullscreen().catch(err => {
+            // ขอ Fullscreen จากกรอบสีขาวหลัก
+            mainApp.requestFullscreen().catch(err => {
                 console.error(`Error attempting to enable full-screen mode: ${err.message}`);
                 // Fallback attempt on document body/documentElement
                 document.documentElement.requestFullscreen().catch(err2 => {
@@ -251,9 +267,24 @@
     startBtn.addEventListener('click', startTimer);
     stopBtn.addEventListener('click', stopTimer);
     resetBtn.addEventListener('click', resetTimer);
-    fullscreenBtn.addEventListener('click', toggleFullscreen); // Event listener สำหรับปุ่ม Fullscreen
-
+    fullscreenBtn.addEventListener('click', toggleFullscreen); 
     inputEl.addEventListener('input', updateDisplay);
+
+    // ----------------------------------------------------------------
+    // PWA Service Worker Registration
+    // ----------------------------------------------------------------
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+        });
+    }
+
 
     // Initial setup
     window.onload = function() {
